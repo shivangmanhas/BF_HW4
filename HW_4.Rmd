@@ -1,0 +1,60 @@
+---
+title: "Lecture 4"
+author: "shivangsingh.manhas@rutgers.edu"
+date: "10/08/2023"
+output: html_document
+---
+  
+```{r}
+library(fpp)
+library(fpp2)
+library(TTR)
+#Importing Dataset
+library(readxl)
+AirPassengers_1 <- read_excel("Documents/AirPassengers_1.xlsx")
+View(AirPassengers_1)
+```
+
+```{r}
+#Converting the data to a time series object
+passengers_ts <- ts(AirPassengers, frequency = 12)
+```
+
+```{r}
+# Splitting the data into training and testing sets
+train_data <- window(passengers_ts, start = c(1958, 1), end = c(1959, 12))
+test_data <- window(passengers_ts, start = c(1960, 1))
+```
+```{r}
+naive_forecast <- naive(train_data, h = length(test_data))
+accuracy_naive <- accuracy(naive_forecast, test_data)
+```
+
+```{r}
+simple_avg_forecast <- meanf(train_data, h = length(test_data))
+accuracy_simple_avg <- accuracy(simple_avg_forecast, test_data)
+```
+
+```{r}
+ma_forecast <- ma(train_data, order = 12, h = length(test_data))
+accuracy_ma <- accuracy(ma_forecast, test_data)
+```
+
+```{r}
+ets_model <- ets(train_data)
+ets_forecast <- forecast(ets_model, h = length(test_data))
+accuracy_ets <- accuracy(ets_forecast, test_data)
+```
+
+```{r}
+hw_model <- HoltWinters(train_data, seasonal = "additive")
+hw_forecast <- forecast(hw_model, h = length(test_data))
+accuracy_hw <- accuracy(hw_forecast, test_data)
+```
+
+
+
+
+
+
+
