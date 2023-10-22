@@ -11,50 +11,79 @@ library(fpp2)
 library(TTR)
 #Importing Dataset
 library(readxl)
-AirPassengers_1 <- read_excel("Documents/AirPassengers_1.xlsx")
+AirPassengers_1 <- read_excel("~/Documents/AirPassengers_1.xlsx")
 View(AirPassengers_1)
 ```
 
 ```{r}
+attributes(AirPassengers_1)
+Acf(AirPassengers_1)
+```
+
+```{r}
 #Converting the data to a time series object
-passengers_ts <- ts(AirPassengers, frequency = 12)
+ts_data <- ts(AirPassengers_1$Passengers, start = c(1958, 1),end = c(1960, 12), frequency = 12)
 ```
 
 ```{r}
-# Splitting the data into training and testing sets
-train_data <- window(passengers_ts, start = c(1958, 1), end = c(1959, 12))
-test_data <- window(passengers_ts, start = c(1960, 1))
-```
-```{r}
-naive_forecast <- naive(train_data, h = length(test_data))
-accuracy_naive <- accuracy(naive_forecast, test_data)
+#Mean forecast
+mean_forecast <- meanf(ts_data,5)
+plot(mean_forecast)
 ```
 
 ```{r}
-simple_avg_forecast <- meanf(train_data, h = length(test_data))
-accuracy_simple_avg <- accuracy(simple_avg_forecast, test_data)
+#Naive Forecast
+naive_forecast <- naive(ts_data,5)
+plot(naive_forecast)
+
+rwf_forecast <- rwf(ts_data,5)
+rwf_forecast <- rwf(ts_data,5, drift=TRUE)
+
+# Seasonal Naive
+snaive_forecast <- snaive(ts_data,5)
 ```
 
 ```{r}
-ma_forecast <- ma(train_data, order = 12, h = length(test_data))
-accuracy_ma <- accuracy(ma_forecast, test_data)
+# Moving Averages
+
+MA1_forecast <- ma(AirPassengers_1,order=5)
+MA2_forecast <- ma(AirPassengers_1,order=9)
 ```
 
 ```{r}
-ets_model <- ets(train_data)
-ets_forecast <- forecast(ets_model, h = length(test_data))
-accuracy_ets <- accuracy(ets_forecast, test_data)
+#Plotting the time series and different model forecasts
+plot(mean_forecast)
+lines(naive_forecast$mean,col="purple")
+lines(rwf_forecast$mean,col="blue")
+lines(snaive_forecast$mean,col="yellow")
+plot(MA1_forecast,col = "red")
+plot(MA2_forecast,col = "green")
 ```
-
 ```{r}
-hw_model <- HoltWinters(train_data, seasonal = "additive")
-hw_forecast <- forecast(hw_model, h = length(test_data))
-accuracy_hw <- accuracy(hw_forecast, test_data)
+# Decomposition
+ets_forecast <- ets(ts_data)
+plot(ets_forecast)
+attributes(ets_forecast)
+ets_forecast$mse
 ```
+```{r}
+# HoltWinters Forecasting
+HW_forecast <- HoltWinters(ts_data)
+plot(HW_forecast)
+SSE_Simple <- HoltWinters(ts_data,beta=FALSE,gamma=FALSE)
+attributes(SSE_Simple)
+plot(SSE_Simple)
+SSE_Simple$SSE
+head(SSE_Simple$fitted)
+```
+```{r}
+#Comparing the forecasting models using accuracy measure and stating the best model based on the accuracy comparison
 
-
-
-
+accuracy(naive_forecast)
+accuracy(rwf_forecast)
+accuracy(ets_forecast)
+print("According to the accuracy results, I assume that the ets predictions are more accurate since their mean is close to 0 and most other errors also have their data closer to 0")
+```
 
 
 
